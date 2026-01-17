@@ -1,0 +1,97 @@
+---
+ // Asegúrate de que la ruta a cards.ts sea correcta
+import type { ProductCard } from '../../../schemas/productos';
+import ImageCard from './ImageCard.astro';
+
+interface Props {
+  product: ProductCard;
+}
+
+const { product } = Astro.props;
+
+// Lógica de Precios: Si hay oferta, mostramos la oferta como principal.
+// Convertimos los strings a números para formatear si es necesario, 
+// o los mostramos directo si ya vienen formateados. Asumiremos que vienen como strings numéricos ("1500.00").
+const displayPrice = product.offer_price ? product.offer_price : product.price;
+const hasDiscount = !!product.offer_price;
+
+// Formateador simple (opcional, si tus strings son números crudos)
+const formatMoney = (val: string) => `S/ ${parseFloat(val).toFixed(2)}`;
+---
+
+<div class="card bg-base-100 shadow-sm hover:shadow-xl transition-shadow duration-300 group overflow-hidden border border-base-200">
+  
+  <div class="relative w-full bg-base-300" transition:name={product.visual_id} transition:animate="slide">
+    <ImageCard 
+      id={product.visual_id}
+      top={product.images.top} 
+      bottom={product.images.bottom} 
+      group={product.group}
+      
+    />
+    
+
+    {hasDiscount && (
+      <div class="absolute top-2 left-2 badge badge-secondary font-bold z-10">
+        OFERTA
+      </div>
+    )}
+
+    {!product.is_available && (
+      <div class="absolute inset-0 bg-base-100/60 flex items-center justify-center z-20 backdrop-blur-[1px]">
+        <span class="badge badge-ghost text-lg font-bold uppercase tracking-widest border-2 border-base-content">Agotado</span>
+      </div>
+    )}
+  </div>
+
+  <div class="card-body p-4 gap-2">
+    <div class="flex items-center justify-between">
+      <span class="text-xs uppercase tracking-wider font-semibold text-base-content/60">
+        {product.group.name}
+      </span>
+      
+      {/* Opcional: Mostrar bolita de color si metadata.hex existe */}
+      {product.group.metadata.hex && (
+        <span 
+          class="w-3 h-3 rounded-full border border-base-300" 
+          style={`background-color: ${product.group.metadata.hex}`}
+          title="Color de marca"
+        ></span>
+      )}
+    </div>
+
+    <a href={`productos/${product.parent_slug}`} class="card-title text-base hover:text-primary transition-colors line-clamp-2 leading-tight h-10">
+      {product.name}
+    </a>
+
+    <div class="mt-2 flex items-baseline gap-2">
+      <span class="text-xl font-bold text-primary">
+        {formatMoney(displayPrice)}
+      </span>
+      
+      {hasDiscount && (
+        <span class="text-sm text-base-content/40 line-through decoration-base-content/40">
+          {formatMoney(product.price)}
+        </span>
+      )}
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+        {product.attributes.map(option=>(
+        <span class="badge badge-primary hover:badge-secondary option__bage">
+            {option.display}
+        </span>
+    ))} 
+
+    </div>
+  </div>
+</div>
+
+<style>
+ .option__bage{
+    &:hover{
+        transition: all 0.3s ease-in-out;
+    }
+ }
+
+</style>

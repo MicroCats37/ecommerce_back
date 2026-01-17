@@ -1,0 +1,30 @@
+{
+  "name": "frontend",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/solid-js": "^5.1.3",
+    "@nanostores/solid": "^1.1.1",
+    "@tailwindcss/vite": "^4.1.18",
+    "astro": "^5.16.6",
+    "astro-icon": "^1.1.5",
+    "axios": "^1.13.2",
+    "clsx": "^2.1.1",
+    "daisyui": "^5.5.14",
+    "embla-carousel": "^8.6.0",
+    "embla-carousel-autoplay": "^8.6.0",
+    "nanostores": "^1.1.0",
+    "sass": "^1.97.1",
+    "solid-js": "^1.9.10",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^4.1.18",
+    "zod": "^3.25.76"
+  }
+}

@@ -1,0 +1,35 @@
+---
+import { ClientRouter } from "astro:transitions";
+import "../styles/global.css";
+export interface Props {
+  title?: string
+}
+
+const { title = "Mi Ecommerce" } = Astro.props
+
+---
+
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <link rel="stylesheet" href="/styles/global.css" />
+    <ClientRouter />
+  </head>
+
+  <body class="app-root min-h-screen bg-white text-neutral-900 ">
+    <slot />
+  </body>
+</html>
+
+<style>
+  .app-root {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100dvh;
+    max-width:100dvw ;
+    margin: 0 auto;
+  }
+</style>

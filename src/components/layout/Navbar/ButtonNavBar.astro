@@ -1,0 +1,26 @@
+---
+export interface Props {
+  class : string
+}
+
+const { class: className } = Astro.props
+---
+
+<div class:list={["relative", className]}>
+
+  <!-- Dropdown -->
+  <div class="dropdown dropdown-hover relative z-50">
+    <div tabindex="0" role="button" class="btn m-1">Hover</div>
+
+    <div
+      tabindex="-1"
+      class="fixed dropdown-content menu left-0 w-full right-0 rounded-box"
+    >
+      <div
+        class="bg-base-100 rounded-box flex mt-2 shadow-lg w-full"
+      >
+        <slot />
+      </div>
+    </div>
+  </div>
+</div>

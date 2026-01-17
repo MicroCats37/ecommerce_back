@@ -1,0 +1,177 @@
+---
+import { Icon } from "astro-icon/components";
+import ButtonNavBar from "./ButtonNavBar.astro";
+import CategoryContentButton from "./CategoryContentButton.astro";
+import { getCategories } from "../../../services/catalog";
+import { buildMenuTree } from "../../../utils/navBuilder";
+import CategoryMenu from "./CategoryMenu.astro";
+
+// 1. Obtenemos los datos en el servidor (Build time o Request time)
+const categories = await getCategories();
+
+const ex = [
+  {
+    id: 1,
+    name: "Tecnología",
+    slug: "tecnologia",
+    subcategories: [
+      {
+        id: 2,
+        name: "Computación",
+        slug: "computacion",
+        subcategories: [
+          {
+            id: 4,
+            name: "Componentes PC",
+            slug: "componentes",
+            subcategories: [
+              {
+                id: 6,
+                name: "Procesadores",
+                slug: "cpu",
+                subcategories: [
+                  {
+                    id: 8,
+                    name: "Intel Core",
+                    slug: "intel",
+                    subcategories: [],
+                  },
+                  {
+                    id: 9,
+                    name: "AMD Ryzen",
+                    slug: "amd",
+                    subcategories: [],
+                  },
+                ],
+              },
+              {
+                id: 7,
+                name: "Tarjetas de Video",
+                slug: "gpu",
+                subcategories: [],
+              },
+            ],
+          },
+          {
+            id: 5,
+            name: "Laptops",
+            slug: "laptops",
+            subcategories: [],
+          },
+        ],
+      },
+      {
+        id: 3,
+        name: "Celulares",
+        slug: "celulares",
+        subcategories: [],
+      },
+    ],
+  },
+  {
+    id: 10,
+    name: "Ropa",
+    slug: "ropa",
+    subcategories: [
+      {
+        id: 11,
+        name: "Hombre",
+        slug: "hombre",
+        subcategories: [],
+      },
+    ],
+  },
+];
+const menuTree = ex;
+---
+
+<nav class="flex sticky top-0 z-1000">
+  <div class="navbar  z-1000 m-2">
+    <!-- Fondo separado para controlar el apilamiento (z-index: -10) -->
+    <div class="absolute inset-0 bg-base-300 rounded-2xl -z-10"></div>
+
+    <!-- Botón de Categorías con contenido interactivo -->
+    {
+      categories && (
+        <ButtonNavBar class="group peer">
+          <CategoryMenu rootCategories={menuTree} />
+        </ButtonNavBar>
+      )
+    }
+
+    <ButtonNavBar class="group peer">
+      <div class="text-sm breadcrumbs text-foreground/80">
+        <ul>
+          <li>
+            <a
+              id="btn-reset"
+              class="inline-flex items-center gap-2 cursor-pointer hover:text-primary transition-colors font-semibold stroke-current"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                class="w-4 h-4"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z"
+                  clip-rule="evenodd"></path>
+              </svg>
+              Inicio
+            </a>
+          </li>
+          <li>
+            <a class="stroke-current">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                class="w-4 h-4"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z"
+                  clip-rule="evenodd"></path>
+              </svg>
+              Inicio
+            </a>
+          </li>
+        </ul>
+      </div>
+    </ButtonNavBar>
+    <div class="navbar-start z-100">
+      <div class="dropdown">
+        <label tabindex="0" class="btn btn-ghost lg:hidden"></label>
+
+        <ul
+          tabindex="0"
+          class="menu menu-sm dropdown-content mt-3
+               p-2 shadow bg-base-100 rounded-box w-52 z-50"
+        >
+          <li><a>Item 1</a></li>
+          <li>
+            <a>Parent</a>
+            <ul class="p-2">
+              <li><a>Submenu 1</a></li>
+              <li><a>Submenu 2</a></li>
+            </ul>
+          </li>
+          <li><a>Item 3</a></li>
+        </ul>
+      </div>
+
+      <a class="btn btn-ghost normal-case text-xl">daisyUI</a>
+    </div>
+
+    <!-- Shared Backdrop -->
+    <div
+      class="fixed inset-0 top-0 bg-black/30 backdrop-blur-sm
+              opacity-0 pointer-events-none
+              transition-opacity duration-500
+              peer-hover:opacity-100
+              -z-1000"
+    >
+    </div>
+  </div>
+</nav>

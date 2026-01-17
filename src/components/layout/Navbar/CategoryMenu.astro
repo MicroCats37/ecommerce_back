@@ -1,0 +1,266 @@
+---
+// --- 1. LÓGICA DEL SERVIDOR (ASTRO) ---
+interface CategoryTreeNode {
+  name: string;
+  slug: string;
+  subcategories?: CategoryTreeNode[];
+}
+
+interface Props {
+  rootCategories: CategoryTreeNode[];
+}
+
+const { rootCategories } = Astro.props;
+
+// Función recursiva para encontrar padres
+function getAllParents(nodes: CategoryTreeNode[]): CategoryTreeNode[] {
+  let parents: CategoryTreeNode[] = [];
+  nodes.forEach(node => {
+    if (node.subcategories && node.subcategories.length > 0) {
+      parents.push(node);
+      const childrenParents = getAllParents(node.subcategories);
+      parents = [...parents, ...childrenParents];
+    }
+  });
+  return parents;
+}
+
+const allParents = getAllParents(rootCategories);
+// Generamos 10 espacios (placeholders) para la profundidad máxima
+const maxBreadcrumbLevels = Array.from({ length: 10 }, (_, i) => i);
+---
+
+<style>
+  /* --- ANIMACIONES --- */
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .animate-slide-in {
+    animation: slideInRight 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+</style>
+
+<div id="category-menu-container" class="w-full min-w-[18rem] bg-base-100 rounded-box border border-base-200 shadow-xl overflow-hidden block">
+  
+  <div class="bg-gradient-to-r from-primary/5 to-transparent px-6 py-4 border-b border-base-200">
+    <nav class="text-sm text-base-content/80">
+      
+      <div class="flex items-center flex-wrap gap-2">
+        
+        <div>
+          <a id="btn-reset" class="flex items-center gap-2 px-2 py-1 rounded-btn hover:bg-base-200 hover:text-primary transition-colors cursor-pointer font-bold leading-none">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
+              <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
+            </svg>
+            <span>Inicio</span>
+          </a>
+        </div>
+
+        {maxBreadcrumbLevels.map((index) => (
+          <div 
+            id={`crumb-item-${index}`} 
+            data-index={index}
+            class="crumb-placeholder hidden items-center gap-2 animate-fade-in cursor-pointer group"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-base-content/30">
+              <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+            </svg>
+
+            <span class="crumb-text font-normal text-base-content/70 group-hover:text-primary group-hover:underline transition-colors"></span>
+          </div>
+        ))}
+
+      </div>
+    </nav>
+  </div>
+
+  <div class="p-2 relative min-h-[250px]">
+    
+    <ul id="menu-root" class="menu-level space-y-1 block animate-slide-in">
+      {rootCategories.map((cat) => (
+        <li>
+          <a 
+            href={`/categoria/${cat.slug}`}
+            data-menu-trigger={cat.subcategories?.length ? `menu-${cat.slug}` : undefined}
+            data-cat-name={cat.name}
+            class="flex items-center justify-between px-4 py-3 rounded-btn text-sm text-base-content hover:bg-base-200 hover:text-primary transition-all group cursor-pointer"
+          >
+            <span class="font-medium">{cat.name}</span>
+            {cat.subcategories && cat.subcategories.length > 0 && (
+              <svg class="h-4 w-4 opacity-40 group-hover:opacity-100 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            )}
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    {allParents.map((parent) => (
+      <ul 
+        id={`menu-${parent.slug}`} 
+        class="menu-level space-y-1 hidden absolute inset-0 p-2 bg-base-100" 
+      >
+        {parent.subcategories?.map((child) => (
+          <li>
+            <a 
+              href={`/categoria/${child.slug}`}
+              data-menu-trigger={child.subcategories?.length ? `menu-${child.slug}` : undefined}
+              data-cat-name={child.name}
+              class="flex items-center justify-between px-4 py-3 rounded-btn text-sm text-base-content hover:bg-base-200 hover:text-primary transition-all group cursor-pointer"
+            >
+              <span>{child.name}</span>
+              {child.subcategories && child.subcategories.length > 0 && (
+                <svg class="h-4 w-4 opacity-40 group-hover:opacity-100 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+    ))}
+  </div>
+</div>
+
+<script>
+document.addEventListener('astro:page-load', () => {
+  // Definimos la interfaz para los datos del historial
+  interface BreadcrumbData {
+    name: string;
+    menuId: string; // El ID del <ul> que corresponde a esta categoría
+  }
+
+  (function initCategoryMenu() {
+    // Selectores tipados
+    const container = document.getElementById('category-menu-container') as HTMLElement | null;
+    const btnReset = document.getElementById('btn-reset') as HTMLElement | null;
+    const breadcrumbPlaceholders = document.querySelectorAll('.crumb-placeholder');
+    
+    if (!container || !btnReset) return;
+
+    // ESTADO: Historial tipado
+    let breadcrumbHistory: BreadcrumbData[] = [];
+
+    // --- FUNCIONES ---
+
+    function showMenuLevel(targetId: string): void {
+      const allLevels = container!.querySelectorAll('.menu-level');
+      
+      allLevels.forEach((el) => {
+        el.classList.add('hidden');
+        el.classList.remove('block');
+        el.classList.remove('animate-slide-in');
+      });
+
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        targetEl.classList.remove('hidden');
+        targetEl.classList.add('block');
+        // Reflow para reiniciar animación
+        void targetEl.offsetWidth; 
+        targetEl.classList.add('animate-slide-in');
+      }
+    }
+
+    function updateBreadcrumbUI(): void {
+      breadcrumbPlaceholders.forEach((li, index) => {
+        const item = li as HTMLElement;
+        const textSpan = item.querySelector('.crumb-text');
+        
+        if (index < breadcrumbHistory.length) {
+          // MOSTRAR
+          if (textSpan) {
+            textSpan.textContent = breadcrumbHistory[index].name;
+          }
+          item.classList.remove('hidden');
+          item.classList.add('flex'); 
+        } else {
+          // OCULTAR
+          item.classList.add('hidden');
+          item.classList.remove('flex');
+        }
+      });
+    }
+
+    function resetMenu(): void {
+      breadcrumbHistory = [];
+      updateBreadcrumbUI();
+      showMenuLevel('menu-root');
+    }
+
+    function navigateToHistoryIndex(index: number): void {
+      const targetItem = breadcrumbHistory[index];
+      if (targetItem) {
+        breadcrumbHistory = breadcrumbHistory.slice(0, index + 1);
+        updateBreadcrumbUI();
+        showMenuLevel(targetItem.menuId);
+      }
+    }
+
+    // --- EVENT LISTENERS ---
+
+    container.addEventListener('click', (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      
+      // 1. ¿Click en un Breadcrumb (Retroceder)?
+      const crumbItem = target.closest('.crumb-placeholder') as HTMLElement;
+      if (crumbItem && crumbItem.dataset.index) {
+        const index = parseInt(crumbItem.dataset.index, 10);
+        if (!isNaN(index)) {
+          e.preventDefault();
+          navigateToHistoryIndex(index);
+        }
+        return; 
+      }
+
+      // 2. ¿Click en un enlace de Categoría (Avanzar)?
+      const link = target.closest('a');
+      
+      if (link && link.id !== 'btn-reset') {
+        const triggerId = link.dataset.menuTrigger; 
+        const name = link.dataset.catName || '';
+
+        if (triggerId) {
+          e.preventDefault();
+          breadcrumbHistory.push({ name: name, menuId: triggerId });
+          updateBreadcrumbUI();
+          showMenuLevel(triggerId);
+        }
+      }
+    });
+
+    btnReset.addEventListener('click', (e: MouseEvent) => {
+      e.preventDefault();
+      resetMenu();
+      btnReset.blur();
+    });
+
+    const parentDropdown = container.closest('.dropdown');
+    if (parentDropdown) {
+      parentDropdown.addEventListener('mouseleave', () => {
+        setTimeout(() => {
+          if (!parentDropdown.matches(':hover')) {
+             resetMenu();
+             if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+             }
+          }
+        }, 150);
+      });
+    }
+
+  })();
+})
+</script>

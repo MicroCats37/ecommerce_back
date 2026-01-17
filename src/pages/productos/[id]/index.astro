@@ -1,0 +1,163 @@
+---
+// --- IMPORTS ---
+import Carousel from "../../../components/general/carousel/Carousel.astro";
+import ProductDetails from "../../../components/products/page/ProductDetails"; // Tu componente SolidJS
+import ShopLayout from "../../../layouts/ShopLayout.astro";
+import { ProductDetailResponseSchema } from "../../../schemas/productos";
+import { getProducstDetail } from "../../../services/catalog";
+
+
+// --- 1. GENERACIÓN DE RUTAS ESTÁTICAS (SSG) ---
+export async function getStaticPaths() {
+  const products = await getProducstDetail();
+
+  return products.flatMap((item) => {
+    // Validamos y parseamos
+    const cleanItem = ProductDetailResponseSchema.parse(item);
+
+    return cleanItem.visual_groups.map((variant) => ({
+      params: { id: variant.slug },
+      props: {
+        productData: cleanItem,
+        activeVariantSlug: variant.slug,
+      },
+    }));
+  });
+}
+
+// --- 2. LÓGICA DEL SERVIDOR ---
+const { productData, activeVariantSlug } = Astro.props;
+const { product, visual_groups } = productData;
+
+const currentVariantVisual = visual_groups.find(
+  (v) => v.slug === activeVariantSlug
+);
+
+if (!currentVariantVisual) {
+  return Astro.redirect("/404");
+}
+
+const currentGallery = currentVariantVisual.images.gallery;
+// SEO Optimizado
+const seoTitle = `${product.name} | ${currentVariantVisual.group.display} - ${product.brand.name}`;
+
+// ID para View Transition
+const transitionId = `${currentVariantVisual.slug}`;
+---
+
+<ShopLayout title={seoTitle}>
+  
+  {/* BREADCRUMBS: Navegación estilo DaisyUI */}
+  <div class=" px-4 pt-4">
+    <div class="text-sm breadcrumbs opacity-70">
+      <ul>
+        <li><a href="/">Inicio</a></li>
+        <li><a href={`/categoria/${product.category.slug}`}>{product.category.name}</a></li>
+        <li class="font-bold">{product.name}</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="flex flex-col lg:flex-row gap-12 p-4 md:pb-20">
+    
+    {/* --- COLUMNA IZQUIERDA: GALERÍA --- */}
+    <div 
+      class="w-full"
+      transition:name={transitionId}
+      transition:animate="initial"
+    >
+       {/* Contenedor con esquinas redondeadas estilo DaisyUI */}
+      <div class=" overflow-hidden shadow-sm">
+        <Carousel gallery={currentGallery} />
+      </div>
+    </div>
+
+    {/* --- COLUMNA DERECHA: INFO --- */}
+    <div class="w-full lg:w-2/5">
+      <div class="sticky top-8 space-y-6">
+        
+        {/* Encabezado del Producto */}
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+             {/* Marca como Badge Outline */}
+            <span class="badge badge-outline font-semibold tracking-wider uppercase">
+              {product.brand.name}
+            </span>
+             {/* Categoría suave */}
+            <span class="text-xs text-base-content/50 font-bold tracking-widest uppercase">
+              {product.category.name}
+            </span>
+          </div>
+
+          <h1 class="text-4xl md:text-5xl font-black tracking-tight leading-none text-base-content">
+            {currentVariantVisual.name}
+          </h1>
+
+          {/* Fake Rating (Estético) */}
+          <div class="flex items-center gap-2 pt-1">
+            <div class="rating rating-sm rating-half disabled">
+              <input type="radio" name="rating-10" class="rating-hidden" />
+              <input type="radio" name="rating-10" class="bg-orange-400 mask mask-star-2 mask-half-1" checked />
+              <input type="radio" name="rating-10" class="bg-orange-400 mask mask-star-2 mask-half-2" checked />
+              <input type="radio" name="rating-10" class="bg-orange-400 mask mask-star-2 mask-half-1" checked />
+              <input type="radio" name="rating-10" class="bg-orange-400 mask mask-star-2 mask-half-2" checked />
+              <input type="radio" name="rating-10" class="bg-orange-400 mask mask-star-2 mask-half-1" />
+            </div>
+            <span class="text-xs opacity-50">(4.8 / 5.0)</span>
+          </div>
+        </div>
+
+        {/* Descripción corta */}
+        <p class="text-base-content/80 leading-relaxed text-lg">
+          {product.description}
+        </p>
+
+        <div class="divider my-2"></div>
+
+        {/* --- COMPONENTE INTERACTIVO SOLIDJS --- */}
+        {/* Aquí va la lógica de selección y precio */}
+        <ProductDetails 
+          product={product} 
+          currentVariantVisual={currentVariantVisual} 
+          client:load
+        />
+
+        <div class="divider my-2"></div>
+
+        {/* Tags y Extras */}
+        <div class="space-y-4">
+          <span class="text-xs font-bold opacity-50 uppercase tracking-widest">
+            Etiquetas
+          </span>
+          <div class="flex flex-wrap gap-2">
+            {product.tags.map((tag) => (
+              <a href={`/tag/${tag.slug}`} class="badge badge-ghost hover:badge-neutral transition-colors cursor-pointer">
+                #{tag.name}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Sección de Garantía / Envíos (Estático visual) */}
+        <div class="grid grid-cols-2 gap-4 mt-8">
+           <div class="flex items-center gap-3 p-4 bg-base-200/50 rounded-xl">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+              <div class="text-xs font-medium">
+                 <p class="font-bold">Envío Gratis</p>
+                 <p class="opacity-60">En pedidos > S/200</p>
+              </div>
+           </div>
+           <div class="flex items-center gap-3 p-4 bg-base-200/50 rounded-xl">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+              <div class="text-xs font-medium">
+                 <p class="font-bold">Garantía</p>
+                 <p class="opacity-60">12 meses de fábrica</p>
+              </div>
+           </div>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+</ShopLayout>

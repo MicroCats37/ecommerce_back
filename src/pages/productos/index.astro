@@ -1,0 +1,10 @@
+---
+import GridProductCards from "../../components/products/cards/GridProductCards.astro";
+import ShopLayout from "../../layouts/ShopLayout.astro";
+import { getProductsCards } from "../../services/catalog";
+const products = await getProductsCards();
+
+---
+<ShopLayout title="Productos">
+    <GridProductCards products={products} />
+</ShopLayout>

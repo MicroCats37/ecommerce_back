@@ -1,0 +1,16 @@
+---
+import { getCategories } from "../../../services/catalog";
+import { buildMenuTree } from "../../../utils/navBuilder";
+import CategoryMenu from "./CategoryMenu.astro";
+
+
+
+
+// 1. Generamos el árbol en el servidor
+export interface Props {
+  tree: ReturnType<typeof buildMenuTree>;
+}
+
+const { tree: treeData } = Astro.props;
+---
+

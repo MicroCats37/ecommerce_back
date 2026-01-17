@@ -1,0 +1,84 @@
+---
+import type { CardGroup } from '../../../schemas/productos';
+
+interface Props {
+  id: string;
+  top: string;
+  bottom: string;
+  group: CardGroup;
+}
+const { top, bottom, id,group } = Astro.props;
+---
+
+<div class="product__image">
+  <div class="content__image">
+    <a href=`/productos/${id}` class="container__image">
+      <img class="top__image" src={top} alt="" />
+      <img class="bottom__image" src={bottom} alt="" />
+    </a>
+    <button
+      class="addCartItem absolute aspect-square w-1/5 h-auto bg-pink-300 rounded-full flex items-center justify-center"
+    >
+      <div class="w-4 aspect-square bg-amber-50"></div>
+    </button>
+  </div>
+</div>
+
+<style>
+  .product__image {
+    z-index: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    .content__image {
+      position: relative;
+      .container__image {
+        position: relative;
+        display: flex;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+
+        & img {
+          width: 100%;
+          height: auto;
+        }
+
+        .top__image {
+        }
+
+        .bottom__image {
+          position: absolute;
+          object-fit: cover;
+          left: 0;
+          top: 0;
+          opacity: 0;
+          transition: all 0.5s ease-out;
+        }
+
+        &:hover {
+          .bottom__image {
+            opacity: 1;
+            transform: scale(1.04);
+            transition: transform 0.3s ease-out;
+          }
+        }
+      }
+      .addCartItem {
+        opacity: 0;
+        margin: 5%;
+        right: 0;
+        bottom: -10%;
+        transition: all 0.3s ease-in-out;
+      }
+      &:hover {
+        .addCartItem {
+          opacity: 1;
+          bottom: 0;
+        }
+      }
+    }
+  }
+</style>
+
